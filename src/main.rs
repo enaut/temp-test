@@ -1,29 +1,27 @@
-// main.rs
-
 #![no_std]
 #![no_main]
 
-extern crate panic_halt;
-use arduino_uno::hal::port::mode::Output;
-use arduino_uno::hal::port::portb::PB5;
-use arduino_uno::prelude::*;
+use panic_halt as _;
 
-fn stutter_blink(led: &mut PB5<Output>, times: usize) {
-    (0..times).map(|i| i * 10).for_each(|i| {
-        led.toggle().void_unwrap();
-        arduino_uno::delay_ms(i as u16);
-    });
-}
-
-#[arduino_uno::entry]
+#[arduino_hal::entry]
 fn main() -> ! {
-    let peripherals = arduino_uno::Peripherals::take().unwrap();
+    let dp = arduino_hal::Peripherals::take().unwrap();
+    let pins = arduino_hal::pins!(dp);
 
-    let pins = arduino_uno::Pins::new(peripherals.PORTB, peripherals.PORTC, peripherals.PORTD);
+    /*
+     * For examples (and inspiration), head to
+     *
+     *     https://github.com/Rahix/avr-hal/tree/next/examples
+     *
+     * NOTE: Not all examples were ported to all boards!  There is a good chance though, that code
+     * for a different board can be adapted for yours.  The Arduino Uno currently has the most
+     * examples available.
+     */
 
-    let mut led = pins.d13.into_output(&pins.ddr);
+    let mut led = pins.d13.into_output();
 
     loop {
-        stutter_blink(&mut led, 25);
+        led.toggle();
+        arduino_hal::delay_ms(100);
     }
 }
